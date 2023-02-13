@@ -5,6 +5,14 @@ import { remark } from 'remark';
 import html from 'remark-html';
 
 
+type Post = {
+  id:string;
+  content: string;
+  title: string;
+  date: string;
+};
+
+
 const postsDirectory = path.join(process.cwd(), 'posts');
 
 export function getSortedPostsData() {
@@ -19,13 +27,16 @@ export function getSortedPostsData() {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
 
     // Use gray-matter to parse the post metadata section
-    const matterResult = matter(fileContents);
-
+    const { data, content } = matter(fileContents);
     // Combine the data with the id
-    return {
-      id,
-      ...matterResult.data,
+    const item: Post = {
+      id: id,
+      content: content,
+      title: data["title"],
+      date: data["date"],
     };
+
+    return item;
   });
   // Sort posts by date
   return allPostsData.sort((a, b) => {
@@ -40,19 +51,7 @@ export function getSortedPostsData() {
 export function getAllPostIds() {
   const fileNames = fs.readdirSync(postsDirectory);
 
-  // Returns an array that looks like this:
-  // [
-  //   {
-  //     params: {
-  //       id: 'ssg-ssr'
-  //     }
-  //   },
-  //   {
-  //     params: {
-  //       id: 'pre-rendering'
-  //     }
-  //   }
-  // ]
+
   return fileNames.map((fileName) => {
     return {
       params: {
